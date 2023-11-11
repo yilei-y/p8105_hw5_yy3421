@@ -24,3 +24,13 @@ options(
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
+
+## Problem 1
+
+### Description of the raw data
+
+```{r}
+homicide_data_raw = read_csv("data/homicide-data.csv")
+```
+
+The raw dataset contains `r homicide_data_raw |> nrow()` observations and `r homicide_data_raw |> ncol()` variables.
