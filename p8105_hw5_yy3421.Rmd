@@ -34,3 +34,49 @@ homicide_data_raw = read_csv("data/homicide-data.csv")
 ```
 
 The raw dataset contains `r homicide_data_raw |> nrow()` observations and `r homicide_data_raw |> ncol()` variables.
+
+```{r}
+homicide_data = 
+  homicide_data_raw |> 
+  mutate(
+    city_state = paste(city, state, sep = ", ")
+  ) 
+```
+
+```{r total number of homicides}
+total_homicides = 
+  homicide_data |> 
+  group_by(city_state) |> 
+  summarise(total_number_of_homicides = n()) 
+```
+
+```{r number of unsolved homicide}
+unsolved_homicide = 
+  homicide_data |> 
+  group_by(city_state) |> 
+  filter(
+    disposition %in% c("Closed without arrest", "Open/No arrest")
+  ) |> 
+  summarise(number_of_unsolved_homicides = n()) 
+```
+
+## Prop test for Baltimore
+```{r}
+output_Baltimore = vector("list", length = 3)
+
+Baltimore_total = 
+  total_homicides |> 
+  filter(
+    city_state == "Baltimore, MD"
+  ) 
+
+Baltimore_unsolved = 
+  unsolved_homicide |> 
+  filter(
+    city_state == "Baltimore, MD"
+  ) 
+    
+prop_Balt = prop.test(1825, 2827, alternative = "two.sided") |> broom::tidy()
+
+```
+
