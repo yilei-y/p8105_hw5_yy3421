@@ -110,8 +110,8 @@ files_collection =
 Making plot:
 ```{r plot}
 files_collection |> 
-  group_by(control_arm, subject_ID) |> 
-  ggplot(aes(x = time, y = data, group = subject_ID))+
-  geom_line()
+  ggplot(aes(x = time, y = data, color = subject_ID))+
+  geom_line()+
+  facet_grid(~control_arm)
 ```
 
