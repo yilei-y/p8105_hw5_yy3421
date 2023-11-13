@@ -115,13 +115,16 @@ files_collection |>
   facet_grid(~control_arm)
 ```
 
+### Comment on differences between groups
+Based on the spaghetti plot above, we can oberve that there is a higher average data for the experiment arm. Furthermore, for all participants in the experiment arm, there is a increasing trend in data as we move from week 2 to 8. However, most data among all participants in the control arm remains in the interval 0 to 2.5.
+
 ## Problem 3
 
 ```{r function for sim}
 
 output = vector("list", 5000)
 
-sim_mean_sd = function(mu, n = 30, sigma = 5) {
+sim_t_test = function(mu, n = 30, sigma = 5) {
   
   sim_data = tibble(
     x = rnorm(n = 30, mean = mu, sd = sigma),
@@ -141,7 +144,7 @@ sim_mean_sd = function(mu, n = 30, sigma = 5) {
 ### Simulation for mu = 0
 ```{r mu = 0}
 for (i in 1:5000) {
-  output[[i]] = sim_mean_sd(mu=0)
+  output[[i]] = sim_t_test(mu=0)
 }
 
 sim_results = bind_rows(output)
@@ -155,7 +158,7 @@ sim_results_df =
     iter = 1:5000
   ) |> 
   mutate(
-    estimate_df = map(mu_size, sim_mean_sd)
+    estimate_df = map(mu_size, sim_t_test)
     )|> 
   unnest(estimate_df)
 ```
@@ -166,13 +169,19 @@ sim_results_df |>
   group_by(mu_size) |> 
   filter(p.value >= 0.05) |> 
   summarize(n_reject = n()) |> 
+  mutate(
+    n_reject = n_reject / 5000
+  ) |> 
   ggplot(aes(x = mu_size, y = n_reject, color = mu_size))+
   geom_point()+
   geom_line()
 ```
 
+Describe the association between effect size and power.
+Based on the plot above, there is a decreasing trend in the proportion of times the null was rejected as we increase the mu size from 0 to 5. There is 0 times the null was rejected when mu equals to 6. Hence, as the effect size increases, the power of this study increases.
+
 #second plot
-```{r}
+```{r plot 2}
 sim_results_df_mean_mu=
   sim_results_df|> 
   group_by(mu_size) |> 
