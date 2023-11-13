@@ -29,13 +29,13 @@ scale_fill_discrete = scale_fill_viridis_d
 
 ### Description of the raw data
 
-```{r}
+```{r data import}
 homicide_data_raw = read_csv("data/homicide-data.csv")
 ```
 
 The raw dataset contains `r homicide_data_raw |> nrow()` observations and `r homicide_data_raw |> ncol()` variables.
 
-```{r}
+```{r city_state var}
 homicide_data = 
   homicide_data_raw |> 
   mutate(
@@ -61,7 +61,7 @@ unsolved_homicide =
 ```
 
 ## Prop test for Baltimore
-```{r}
+```{r prop test Baltimore}
 output_Baltimore = vector("list", length = 3)
 
 Baltimore_total = 
@@ -117,7 +117,7 @@ files_collection |>
 
 ## Problem 3
 
-```{r}
+```{r function for sim}
 
 output = vector("list", 5000)
 
@@ -139,7 +139,7 @@ sim_mean_sd = function(mu, n = 30, sigma = 5) {
 ```
 
 ### Simulation for mu = 0
-```{r}
+```{r mu = 0}
 for (i in 1:5000) {
   output[[i]] = sim_mean_sd(mu=0)
 }
@@ -148,7 +148,7 @@ sim_results = bind_rows(output)
 ```
 
 ### Simulation for mu = 0:6
-```{r}
+```{r mu simulation}
 sim_results_df = 
   expand_grid(
     mu_size = c(0, 1, 2, 3, 4, 5, 6),
@@ -156,7 +156,7 @@ sim_results_df =
   ) |> 
   mutate(
     estimate_df = map(mu_size, sim_mean_sd)
-  ) |> 
+    )|> 
   unnest(estimate_df)
 ```
 
@@ -169,5 +169,23 @@ sim_results_df |>
   ggplot(aes(x = mu_size, y = n_reject, color = mu_size))+
   geom_point()+
   geom_line()
+```
+
+#second plot
+```{r}
+sim_results_df_mean_mu=
+  sim_results_df|> 
+  group_by(mu_size) |> 
+  summarise(mean_estimate = mean(estimate))
+
+sim_results_df |> 
+  group_by(mu_size) |> 
+  filter(p.value >= 0.05) |> 
+  summarize(mean_reject = mean(estimate)) |> 
+  right_join(sim_results_df_mean_mu) |> 
+  ggplot(aes(x = mu_size)) +
+  geom_line(aes(y = mean_reject, color = mean_reject))+
+  geom_line(aes(y = mean_estimate, color = mean_estimate))
+
 ```
 
