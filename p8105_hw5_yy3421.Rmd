@@ -115,3 +115,23 @@ files_collection |>
   facet_grid(~control_arm)
 ```
 
+## Problem 3
+
+```{r}
+sim_mean_sd = function(mu, n = 30, sigma = 5) {
+  
+  sim_data = tibble(
+    x = rnorm(n = 30, mean = mu, sd = sigma),
+  )
+  
+  sim_data |> 
+    t.test(conf.level = 0.95) |> 
+    broom::tidy() 
+}
+
+```
+
+```{r}
+sim_mean_sd(mu=0)
+```
+
