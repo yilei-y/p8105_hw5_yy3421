@@ -80,3 +80,38 @@ prop_Balt = prop.test(1825, 2827, alternative = "two.sided") |> broom::tidy()
 
 ```
 
+## Problem 2
+```{r data cleaning and tidying}
+files_collection = 
+  tibble(
+    file_name = list.files(path = "./data/problem_2"),
+    file_path = paste(c("./data/problem_2/"), file_name, sep = "")
+  ) |>
+  mutate(
+    data = map(file_path, read_csv)
+  ) |> 
+  separate(file_name, into = c("control_arm", "subject_ID"), sep = "_") |> 
+  separate(subject_ID, into = c("subject_ID", "file_type"), sep = "\\.")|> 
+  unnest(data) |> 
+  pivot_longer(
+    week_1:week_8,
+    names_to = c("week"),
+    values_to = c("data") 
+  ) |> 
+  separate(week, into = c("week", "time"), sep = "_")|> 
+  select(
+    -file_type, -file_path, -week
+  ) |> 
+  mutate(
+    time = as.numeric(time)
+  )
+```
+
+Making plot:
+```{r plot}
+files_collection |> 
+  group_by(control_arm, subject_ID) |> 
+  ggplot(aes(x = time, y = data, group = subject_ID))+
+  geom_line()
+```
+
