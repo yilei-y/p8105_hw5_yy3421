@@ -121,7 +121,6 @@ Based on the spaghetti plot above, we can oberve that there is a higher average 
 ## Problem 3
 
 ```{r function for sim}
-
 output = vector("list", 5000)
 
 sim_t_test = function(mu, n = 30, sigma = 5) {
@@ -143,11 +142,14 @@ sim_t_test = function(mu, n = 30, sigma = 5) {
 
 ### Simulation for mu = 0
 ```{r mu = 0}
+output = vector("list", 5000)
+
 for (i in 1:5000) {
   output[[i]] = sim_t_test(mu=0)
 }
 
 sim_results = bind_rows(output)
+
 ```
 
 ### Simulation for mu = 0:6
@@ -167,7 +169,7 @@ sim_results_df =
 ```{r}
 sim_results_df |> 
   group_by(mu_size) |> 
-  filter(p.value >= 0.05) |> 
+  filter(p.value < 0.05) |> 
   summarize(n_reject = n()) |> 
   mutate(
     n_reject = n_reject / 5000
@@ -189,12 +191,12 @@ sim_results_df_mean_mu=
 
 sim_results_df |> 
   group_by(mu_size) |> 
-  filter(p.value >= 0.05) |> 
+  filter(p.value < 0.05) |> 
   summarize(mean_reject = mean(estimate)) |> 
   right_join(sim_results_df_mean_mu) |> 
   ggplot(aes(x = mu_size)) +
-  geom_line(aes(y = mean_reject, color = mean_reject))+
-  geom_line(aes(y = mean_estimate, color = mean_estimate))+
+  geom_line(aes(y = mean_reject, color = "red"))+
+  geom_line(aes(y = mean_estimate, color = "blue"))+
   labs(
     x = c("Size of Mu"),
     y = c("Mean of Estimate"),
