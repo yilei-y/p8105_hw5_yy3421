@@ -30,55 +30,79 @@ scale_fill_discrete = scale_fill_viridis_d
 ### Description of the raw data
 
 ```{r data import}
-homicide_data_raw = read_csv("data/homicide-data.csv")
+homicide_data_raw = read_csv("data/homicide-data.csv", na = c("", "NA", "Unknown"))
 ```
 
-The raw dataset contains `r homicide_data_raw |> nrow()` observations and `r homicide_data_raw |> ncol()` variables.
 
-```{r city_state var}
+```{r city_state var and cleaning}
 homicide_data = 
   homicide_data_raw |> 
   mutate(
-    city_state = paste(city, state, sep = ", ")
-  ) 
-```
-
-```{r total number of homicides}
-total_homicides = 
-  homicide_data |> 
-  group_by(city_state) |> 
-  summarise(total_number_of_homicides = n()) 
-```
-
-```{r number of unsolved homicide}
-unsolved_homicide = 
-  homicide_data |> 
-  group_by(city_state) |> 
-  filter(
-    disposition %in% c("Closed without arrest", "Open/No arrest")
+    city_state = paste(city, state, sep = ", "),
+    resolution = case_when(
+      disposition == "Closed without arrest" ~ "unsolved",
+      disposition == "Open/No arrest"        ~ "unsolved",
+      disposition == "Closed by arrest"      ~ "solved")
   ) |> 
-  summarise(number_of_unsolved_homicides = n()) 
+  filter(city_state != "Tulsa, AL") 
 ```
+
+The raw dataset contains `r homicide_data_raw |> nrow()` observations and `r homicide_data_raw |> ncol()` variables. This dataset also contains demographic information of the victim for each case, like age, sex, and race, and case-specific information, like date, and location.
+
+Through data cleaning, a `city_state` variable was first created to combine the information from city and state variable. Furthermore, a `resolution` variable was created to distinguish the final status of each case. One entry in Tulsa, AL was excluded through data cleaning as the location is not a major US city.
+
+```{r total and unsolved cases}
+city_homicide_df = 
+  homicide_data %>% 
+  select(city_state, disposition, resolution) %>% 
+  group_by(city_state) %>% 
+  summarize(
+    hom_total = n(),
+    hom_unsolved = sum(resolution == "unsolved"))
+```
+
+
+The above code chunks summarizes the total number of homicides and the number of homicides that were solved.
 
 ## Prop test for Baltimore
-```{r prop test Baltimore}
-output_Baltimore = vector("list", length = 3)
 
-Baltimore_total = 
-  total_homicides |> 
-  filter(
-    city_state == "Baltimore, MD"
-  ) 
+Looking at cases located in Baltimore, MD, proportion test was used, complemented by `broom::tidy` function, to estimate the proportion and confidence level of unsolved homicides in that city. 
 
-Baltimore_unsolved = 
-  unsolved_homicide |> 
-  filter(
-    city_state == "Baltimore, MD"
-  ) 
-    
-prop_Balt = prop.test(1825, 2827, alternative = "two.sided") |> broom::tidy()
+```{r Balt prop}
+bmore_test = 
+  prop.test(
+    x = filter(city_homicide_df, city_state == "Baltimore, MD")  |>  pull(hom_unsolved),
+    n = filter(city_homicide_df, city_state == "Baltimore, MD")  |>  pull(hom_total)) 
 
+broom::tidy(bmore_test)  |>  
+  knitr::kable(digits = 3)
 ```
+
+Furthermore, estimates and CIs for the proportion of unsolved homicides for each city are presented below using the `map` function.
+
+```{r all city prop}
+test_results = 
+  city_homicide_df  |>  
+  mutate(
+    prop_tests = map2(hom_unsolved, hom_total, \(x, y) prop.test(x = x, n = y)),
+    tidy_tests = map(prop_tests, broom::tidy))  |>  
+  select(-prop_tests)  |>  
+  unnest(tidy_tests)  |>  
+  select(city_state, estimate, conf.low, conf.high)  |>  
+  mutate(city_state = fct_reorder(city_state, estimate))
+```
+
+Using the data from the above data chunck, a point plot, along with error bar, is created to visualized the estimate of the proportion of unsolved homicides in each city. Chicago, IL has the highest estimate and Richmond, VA has the lowest.
+
+```{r p1 plot}
+test_results  |>  
+  mutate(city_state = fct_reorder(city_state, estimate))  |>  
+  ggplot(aes(x = city_state, y = estimate)) + 
+  geom_point() + 
+  geom_errorbar(aes(ymin = conf.low, ymax = conf.high)) + 
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+```
+
 
 ## Problem 2
 ```{r data cleaning and tidying}
