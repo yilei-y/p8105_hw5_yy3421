@@ -92,7 +92,7 @@ test_results =
   mutate(city_state = fct_reorder(city_state, estimate))
 ```
 
-Using the data from the above data chunck, a point plot, along with error bar, is created to visualized the estimate of the proportion of unsolved homicides in each city. Chicago, IL has the highest estimate and Richmond, VA has the lowest.
+Using the data from the above data chunk, a point plot, along with error bar, is created to visualized the estimate of the proportion of unsolved homicides in each city. Chicago, IL has the highest estimate and Richmond, VA has the lowest.
 
 ```{r p1 plot}
 test_results  |>  
@@ -141,7 +141,12 @@ files_collection |>
   ggplot(aes(x = time, y = data, color = subject_ID))+
   geom_line()+
   geom_point(alpha = .3)+
-  facet_grid(~control_arm)
+  facet_grid(~control_arm)+
+  labs(
+    x = c("Week"),
+    y = c("Data"),
+    caption = c("Week Versus Data")
+  )
 ```
 
 After data cleaning, the above data chunk was used to visualize the change in data for control and experiment group along week 1 to week 8.
@@ -151,11 +156,9 @@ Based on the spaghetti plot above, we can oberve that there is a higher average 
 
 ## Problem 3
 
-
+Before starting the simulation, the `sim_t_test` function was first created that functions to perform a t-test based on a unfixed μ value and fixed n and sigma values. In this function, `rnorm` function was first used to create the data frame based on the new μ value. Then, `t.test` function was used, combining with `broom::tidy` function to calculate the estimation of the mean and p value.
 
 ```{r function for sim}
-output = vector("list", 5000)
-
 sim_t_test = function(mu, n = 30, sigma = 5) {
   
   sim_data = tibble(
@@ -170,8 +173,9 @@ sim_t_test = function(mu, n = 30, sigma = 5) {
     )
     
 }
-
 ```
+
+After creating the function, simulation was done for μ = 0. An output list was first created for storage of data from simulation afterwards. Then, simulation was done for 5000 times and collected in the output list. At last, `bind_rows` was used to collect all 5000 simulations in one tibble.
 
 ### Simulation for mu = 0
 ```{r mu = 0}
@@ -183,6 +187,7 @@ for (i in 1:5000) {
 
 sim_results = bind_rows(output)
 
+sim_results
 ```
 
 ### Simulation for mu = 0:6
@@ -198,7 +203,8 @@ sim_results_df =
   unnest(estimate_df)
 ```
 
-# the proportion of times the null was rejected (the power of the test) on the y axis and the true value of μ on the x axis
+The above data chunk simulates results for μ = 0 to 6 using the `map` function. After collecting data of estimates and p-value for μ = 0 to 6, data visualization could be performed below.
+
 ```{r}
 sim_results_df |> 
   group_by(mu_size) |> 
@@ -209,13 +215,16 @@ sim_results_df |>
   ) |> 
   ggplot(aes(x = mu_size, y = n_reject, color = mu_size))+
   geom_point()+
-  geom_line()
+  geom_line()+
+  labs(
+    x = "True value of Mu",
+    y = "Proportion of times the null was rejected",
+    caption = c("True value of Mu Versus Proportion of times the null was rejected")
+  )
 ```
 
-Describe the association between effect size and power.
-Based on the plot above, there is a decreasing trend in the proportion of times the null was rejected as we increase the mu size from 0 to 5. There is 0 times the null was rejected when mu equals to 6. Hence, as the effect size increases, the power of this study increases.
+The above plot visualize the association between the proportion of times the null was rejected and the true value of μ. Based on the plot above, there is an increasing trend in the proportion of times the null was rejected as we increase the μ size from 0 to 6. There is 100% the null was rejected when μ equals to 6. Hence, as the effect size increases, the power of this study increases.
 
-#second plot
 ```{r plot 2}
 sim_results_df_mean_mu=
   sim_results_df|> 
@@ -238,5 +247,4 @@ sim_results_df |>
 
 ```
 
-Is the sample average of μ̂ across tests for which the null is rejected approximately equal to the true value of μ? Why or why not?
-Based on the plot above, the sample average of μ̂ across tests for which the null is rejected is smaller than the true value of mu. As the null is rejected, compared to the total mean estimate, the sample average will be more deviated from the true value of mu. Therefore, in the case of this simulation, the sample average across tests for which the null is reject is smaller than the true value of mu.
+Based on the plot above, the sample average of μ̂ across tests for which the null is rejected is smaller than the true value of μ. As the null is rejected, compared to the total mean estimate of μ, the sample average will be more deviated from the true value of μ. Therefore, in the case of this simulation, the sample average across tests for which the null is reject is larger than the true value of μ.
