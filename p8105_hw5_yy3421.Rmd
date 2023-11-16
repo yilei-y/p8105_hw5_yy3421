@@ -240,11 +240,11 @@ sim_results_df |>
   geom_line(aes(y = mean_reject, color = "red"))+
   geom_line(aes(y = mean_estimate, color = "blue"))+
   labs(
-    x = c("Size of Mu"),
+    x = c("True μ"),
     y = c("Mean of Estimate"),
     caption = c("Change in Mean of Total and Rejected Estimate based on Change in Mu Size")
   )
 
 ```
 
-Based on the plot above, the sample average of μ̂ across tests for which the null is rejected is smaller than the true value of μ. As the null is rejected, compared to the total mean estimate of μ, the sample average will be more deviated from the true value of μ. Therefore, in the case of this simulation, the sample average across tests for which the null is reject is larger than the true value of μ.
+Based on the plot above, the sample average of μ̂ across tests for which the null is rejected is smaller than the true value of μ. As the null is rejected, compared to the total mean estimate of μ, the sample average will be more deviated from the true value of μ. Furthermore, as the effective size increases, leading high power of the test, the possibility of rejecting the null increases. This high possibility could also leads to a higher sample average compared to the true μ.
