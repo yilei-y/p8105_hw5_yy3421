@@ -152,7 +152,7 @@ files_collection |>
 After data cleaning, the above data chunk was used to visualize the change in data for control and experiment group along week 1 to week 8.
 
 ### Comment on differences between groups
-Based on the spaghetti plot above, we can oberve that there is a higher average data for the experiment arm. Furthermore, for all participants in the experiment arm, there is a increasing trend in data as we move from week 1 to 8. However, most data among all participants in the control arm remains in the interval 0 to 2.5. This could indicate a influence of treatment on the experimental group compared to the control group.
+Based on the spaghetti plot above, we can oberve that there is a higher average data for the experiment arm. Furthermore, for all participants in the experiment arm, there is a increasing trend in data as we move from week 1 to 8. However, most data among all participants in the control arm remains in the interval -2.5 to 2.5. This could indicate a influence of treatment on the experimental group compared to the control group.
 
 ## Problem 3
 
